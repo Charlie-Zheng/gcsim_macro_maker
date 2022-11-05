@@ -33,7 +33,7 @@ def get_debug(filename) -> dict:
                 data = zlib.decompress(data)
             data = json.loads(data)
             # perform some data validation to make sure the file is a gcsim config
-            debug = json.loads(data["debug"])
+            debug = data["debug"]
             actions = [Action(item["char_index"], item["msg"], item["frame"]) for item in debug if item["event"] == "action"]
             return data
     except Exception:
@@ -117,7 +117,7 @@ msg_to_key: dict[str, KeyAction]= {
     "executed dash" : KeyAction("Click , R", 1),
     "executed burst" : KeyAction("q", 1),
     "executed attack" : KeyAction("Click", 1),
-    "executed charge" : KeyAction("Click", 30),
+    "executed charge" : KeyAction("Click", 25),
     "executed aim" : KeyAction("Click", 90),
     "executed high_plunge" : KeyAction("Click", 1),
 }
@@ -172,7 +172,7 @@ def key_actions_to_razer_synapse(key_actions:list[KeyAction]):
 
 def main():
     data = get_debug(gcsim_file)
-    debug = json.loads(data["debug"])
+    debug = data["debug"]
 
     actions = [Action(item["char_index"], item["msg"], item["frame"]) for item in debug if item["event"] == "action" and item["msg"] != "executed wait"]
     key_actions:list[KeyAction] = [KeyAction(None, 1)]
@@ -190,8 +190,8 @@ def main():
                 key_actions.append(swap_act)
                 key_actions.append(KeyAction(None, actions[i+1].frame-actions[i].frame-swap_act.delay+extra_delay))
                 i += 1
-                # buffer swap by 4 frames
-                buffer = 4
+                # buffer swap by 3 frames
+                buffer = 3
                 key_actions[-3].delay -= buffer
                 key_actions[-1].delay += buffer
         else:
@@ -206,15 +206,16 @@ def main():
                 buffer = min(max(key_actions[-3].delay - 5, 20), 25)
                 key_actions[-3].delay -= buffer
                 key_actions[-1].delay += buffer
-                key_actions[-1].delay -= extra_delay + 1
+                key_actions[-1].delay -= extra_delay
             elif i > 1 and (actions[i-1].msg == "executed attack") and act.msg == "executed attack":
                 buffer = 5
                 key_actions[-3].delay -= buffer
                 key_actions[-1].delay += buffer
+                key_actions[-1].delay -= extra_delay
             elif i > 1 and actions[i-1].msg == "executed charge" and act.msg == "executed attack":
-                key_actions[-1].delay -= extra_delay + 1
+                key_actions[-1].delay -= extra_delay
             elif act.msg == "executed dash":
-                # Just make dashes 5 frames longer to fix issues with dash frames being too short
+                # Just make dashes 2 frames longer to fix issues with dash frames being too short
                 key_actions[-1].delay += 2
                 pass
         i+= 1
