@@ -46,8 +46,9 @@ razer_synapse_key_to_makecode = {
     "4" : "5",
     "Click" : "1",
     "Click , R" : "2",
-    "e" : "18",
     "q" : "16",
+    "w" : "17",
+    "e" : "18",
     "space" : "57",
 }
 
@@ -120,6 +121,7 @@ msg_to_key: dict[str, KeyAction]= {
     "executed charge" : KeyAction("Click", 25),
     "executed aim" : KeyAction("Click", 90),
     "executed high_plunge" : KeyAction("Click", 1),
+    "executed walk" : KeyAction("w", 1),
 }
 
 # need custom overrides for different chars
@@ -191,7 +193,7 @@ def main():
                 key_actions.append(KeyAction(None, actions[i+1].frame-actions[i].frame-swap_act.delay+extra_delay))
                 i += 1
                 # buffer swap by 3 frames
-                buffer = 3
+                buffer = 0
                 key_actions[-3].delay -= buffer
                 key_actions[-1].delay += buffer
         else:
