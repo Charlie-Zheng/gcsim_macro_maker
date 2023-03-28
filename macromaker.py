@@ -21,7 +21,7 @@ export_extensions = {
 frame_length = 16.6666666667
 
 default_key_delay = 1
-extra_delay = 1
+extra_delay = 0
 max_frame_dur = 60*22
 def get_debug(filename) -> dict:
     try:
@@ -36,7 +36,7 @@ def get_debug(filename) -> dict:
             debug = data["debug"]
             actions = [Action(item["char_index"], item["msg"], item["frame"]) for item in debug if item["event"] == "action"]
             return data
-    except Exception:
+    except Exception as e:
         err(f"Did not find file \033[1;32m{filename}\033[0m or it is not a valid gcsim output file")
 
 razer_synapse_key_to_makecode = {
@@ -49,7 +49,7 @@ razer_synapse_key_to_makecode = {
     "q" : "16",
     "w" : "17",
     "e" : "18",
-    "space" : "57",
+    "Space" : "57",
 }
 
 @dataclass
@@ -122,6 +122,7 @@ msg_to_key: dict[str, KeyAction]= {
     "executed aim" : KeyAction("Click", 90),
     "executed high_plunge" : KeyAction("Click", 1),
     "executed walk" : KeyAction("w", 1),
+    "executed jump" : KeyAction("Space", 1),
 }
 
 # need custom overrides for different chars
@@ -218,8 +219,10 @@ def main():
                 key_actions[-1].delay -= extra_delay
             elif act.msg == "executed dash":
                 # Just make dashes 2 frames longer to fix issues with dash frames being too short
-                key_actions[-1].delay += 2
-                pass
+                key_actions[-1].delay += 1
+            elif act.msg == "executed jump":
+                # Just make dashes 2 frames longer to fix issues with dash frames being too short
+                key_actions[-1].delay += 1
         i+= 1
     if key_actions[-1].key==None:
         key_actions = key_actions[:-1]
