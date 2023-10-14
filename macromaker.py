@@ -33,7 +33,7 @@ def get_debug(filename) -> dict:
                 data = zlib.decompress(data)
             data = json.loads(data)
             # perform some data validation to make sure the file is a gcsim config
-            debug = data["debug"]
+            debug = data["logs"]
             actions = [Action(item["char_index"], item["msg"], item["frame"]) for item in debug if item["event"] == "action"]
             return data
     except Exception as e:
@@ -57,7 +57,7 @@ class KeyAction():
     key: str
     delay: float
     def to_ahk(self):
-        if self.delay <= 0:
+        if self.delay <= 0 & self.key != None:
             raise ValueError("Delay must be positive but got negative delay" + f"{self.delay=}, {self.delay=}")
         if self.key != None:
             return [
@@ -71,7 +71,7 @@ class KeyAction():
             ]
     
     def to_razer_xml(self):
-        if self.delay <= 0:
+        if self.delay < 0:
             raise ValueError("Delay must be positive but got negative delay, " + f"{self.key=}, {self.delay=}")
         if self.key != None:
             ret = [""]
@@ -175,12 +175,16 @@ def key_actions_to_razer_synapse(key_actions:list[KeyAction]):
 
 def main():
     data = get_debug(gcsim_file)
-    debug = data["debug"]
+    debug = data["logs"]
 
     actions = [Action(item["char_index"], item["msg"], item["frame"]) for item in debug if item["event"] == "action" and item["msg"] != "executed wait"]
     key_actions:list[KeyAction] = [KeyAction(None, 1)]
 
-    chars = data["char_names"]
+    chars_arr = data["character_details"]
+
+    chars = []
+    for i in range(len(chars_arr)):
+        chars.append(chars_arr[i]["name"])    
 
     i = 0
     while i < len(actions):
